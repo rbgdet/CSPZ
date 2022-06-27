@@ -1,0 +1,23 @@
+COLUMNS     /data/des90.a/data/raulteix/software/DESC_BPZ/tests/DELVEdata_example.columns
+OUTPUT	    /data/des90.a/data/raulteix/software/DESC_BPZ/tests/DELVEdata_example_output_05119_no_wise.bpz.h5
+SPECTRA     CWWSB4.list
+PRIOR	    hdfn_gen
+DZ          0.01
+ZMIN        0.005
+ZMAX        3.505
+MAG         yes
+NEW_AB      no
+MADAU	    no #TURN OFF MADAU!!!!
+EXCLUDE     none
+CHECK       yes
+#ZC          1.0,2.0
+#FC          0.2,0.4
+VERBOSE     no
+#INTERP      0
+ODDS        0.68
+PROBS       no
+PROBS_LITE  DELVEdata_09602_probs.h5
+GET_Z       yes
+INTERACTIVE yes
+PLOTS       no
+#ONLY_TYPE   yes
