@@ -46,32 +46,36 @@ PROB_path   = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/outp
 #easily output them to 10 different filenames/directories from this script
 output_path = args['OutPath'] #f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/output/pzs/pz_sgY3_{tile}_finer_test.h5'
 
-list_lines = ['COLUMNS         %s\n'%column_path,
-             f'OUTPUT          %s\n'%output_path,
-              'SPECTRA         %s\n'%args['spectra'], #eg CWWSB4.list 
-              'PRIOR           %s\n'%args['prior'], #eg hdfn_gen
-              'DZ              %s\n'%args['dz'], 
-              'ZMIN            %s\n'%args['zmin'],
-              'ZMAX            %s\n'%args['zmax'], 
-              'MAG             yes\n', 
-              'NEW_AB          no\n', 
-              'MADAU           no #TURN OFF MADAU!!!!\n',
-              'EXCLUDE         none\n', 
-              'CHECK           yes\n', 
-              '#ZC             1.0,2.0\n', 
-              '#FC             0.2,0.4\n',
-              'VERBOSE         no\n', 
-              '#INTERP         0\n', 
-              'ODDS            0.68\n',
-             f'PROBS           %s\n'%PROB_path,
-             f'PROBS2          no\n',
-             f'PROBS_LITE      no\n', 
-              'GET_Z           yes\n', 
-              'INTERACTIVE     yes\n', 
-              'PLOTS           no\n',
-              'SAMPLING        yes\n',
-              'NSAMPLES        %d\n'%args['Nsamples'],
-              '#ONLY_TYPE      yes\n']
+list_lines = ['COLUMNS         %s'%column_path,
+             f'OUTPUT          %s'%output_path,
+              'SPECTRA         %s'%args['spectra'], #eg CWWSB4.list 
+              'PRIOR           %s'%args['prior'], #eg hdfn_gen
+              'DZ              %s'%args['dz'], 
+              'ZMIN            %s'%args['zmin'],
+              'ZMAX            %s'%args['zmax'], 
+              'MAG             yes', 
+              'NEW_AB          no', 
+              'MADAU           no #TURN OFF MADAU!!!!',
+              'EXCLUDE         none', 
+              'CHECK           yes', 
+              '#ZC             1.0,2.0', 
+              '#FC             0.2,0.4',
+              'VERBOSE         no', 
+              '#INTERP         0', 
+              'ODDS            0.68',
+             f'PROBS           %s'%PROB_path,
+             f'PROBS2          no',
+             f'PROBS_LITE      no', 
+              'GET_Z           yes', 
+              'INTERACTIVE     yes', 
+              'PLOTS           no',
+              'SAMPLING        yes',
+              'NSAMPLES        %d'%args['Nsamples'],
+              '#ONLY_TYPE      yes']
+
+#I removed all the "\n" from each line purely for visual considerations.
+#Now adding them back in with a single list comprehension line.
+list_lines = [l + '\n' for l in list_lines]
 
 #Can't modify the example.pars directly.
 #If we run in parallel then multiple instances of script
