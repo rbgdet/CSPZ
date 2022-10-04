@@ -7,6 +7,7 @@ import subprocess as sp
 import glob
 import sys
 import argparse
+from astropy.table import Table
 
 #Get all input arguments from command line
 #so like my_script.py --Arg1 Val1 --Arg2 Val2 --Flag1 --Flag2
@@ -37,6 +38,31 @@ args = vars(my_parser.parse_args())
 
 tile = args['tilename']
 
+bandlist = ['g', 'r', 'i', 'z']
+BANDLIST = ['G', 'R', 'I', 'Z']
+
+tables=[]
+h5dir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/table.h5'
+
+for band, BAND in zip(bandlist, BANDLIST):
+	fitsdir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/*{band}_cat.fits'
+
+	table_j = Table.read(fitsdir)
+	table_j[f'MAG_AUTO_{BAND}']=table_j['MAG_AUTO']
+	table_j[f'MAGERR_AUTO_{BAND}']=table_j['MAGERR_AUTO']
+	tables.append(table_j['NUMBER', 'RA', 'DEC', f'MAG_AUTO_{BAND}', f'MAGERR_AUTO_{BAND}'])
+
+table = astropy.hstack(tables)
+
+subtable = table['NUMBER', 'RA', 'DEC', 'MAG_AUTO_G', 'MAG_AUTO_R'\
+                         , 'MAG_AUTO_I', 'MAG_AUTO_Z', 'MAGERR_AUTO_G', 'MAGERR_AUTO_R'\
+                         , 'MAGERR_AUTO_I', 'MAGERR_AUTO_Z']
+
+dframe = pd.DataFrame(data=subtable['NUMBER'], columns = ['NUMBER'])
+	for label in table_i.columns:
+        	dframe[label] = subtable[label]
+
+dframe.to_hdf(h5dir, key='df')
 
 column_path =  '/home/raulteixeira/photoz/code/software/DESC_BPZ/tests/CosmicShearPZ.columns'
 PROB_path   = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/output/probs/PZ_OUTPUT_sgY3_probs_{tile}_finer_test'
@@ -89,6 +115,7 @@ pars.writelines(list_lines)
 pars.close()
 
 catalog_name = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/pzinput/pzinput_sgY3_{tile}.h5'
+
 #running bpz using subprocess
 sp.run(f'python /home/raulteixeira/repos/DESC_BPZ/scripts/bpz.py ' + catalog_name + ' -P /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
 
