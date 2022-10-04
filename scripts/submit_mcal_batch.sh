@@ -9,22 +9,24 @@ cd /scratch/midway2/raulteixeira/CosmicShearData/
 mkdir tile_${i}
 cd tile_${i}
 cp /home/raulteixeira/repos/CSPZ/scripts/download_tile.py ./.
-cp /home/raulteixeira/repos/CSPZ/scripts/bpzh5fitsrun.py ./. #
+cp /home/raulteixeira/repos/CSPZ/scripts/bpztilerun_template.py ./. #
 cp /home/raulteixeira/repos/shearcat/code/measurement/tile_DR3_1_1.csv ./.
 
 python download_tile.py ${i}
 
 echo "#!/bin/sh
-#SBATCH -t 10:00:00
-#SBATCH --partition=broadwl
+#SBATCH -t 00:30:00
+#SBATCH --partition=chihway
 #SBATCH --account=pi-chihway
 #SBATCH --job-name=BPZ_${i}
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=28
 
-python bpzh5fitsrun.py ${i}
+python bpztilerun_template.py --tilename ${i}\
+			  --spectra CWWSB4.list\
+ 			  --prior hdfn_gen\
+ 			  --OutPath /scratch/midway2/raulteixeira/CosmicShearData/tile_${i}/pzout_${i}.h5 
 
-mv metacal_output_*fits /project2/chihway/data/decade/shearcat_v1/.
 rm -rf /scratch/midway2/raulteixeira/CosmicShearData/tile_${i}/decade.ncsa.illinois.edu
 rm /scratch/midway2/raulteixeira/CosmicShearData/tile_${i}/*py
 rm /scratch/midway2/raulteixiera/CosmicShearData/tile_${i}/tile_DR3_1_1.csv
