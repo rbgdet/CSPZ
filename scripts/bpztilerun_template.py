@@ -18,6 +18,7 @@ my_parser.add_argument('--tilename',  action='store', type = str,   required = T
 my_parser.add_argument('--spectra',   action='store', type = str,   required = True)
 my_parser.add_argument('--prior',     action='store', type = str,   required = True)
 my_parser.add_argument('--OutPath',   action='store', type = str,   required = True)
+#my_parser.add_argument('--mag',       action='store', type = str,   required = True)
 
 #Optional ones. Default values given and can be varied if needed.
 my_parser.add_argument('--dz',        action='store', type = float, default = 0.01)
@@ -25,16 +26,15 @@ my_parser.add_argument('--zmin',      action='store', type = float, default = 0.
 my_parser.add_argument('--zmax',      action='store', type = float, default = 3.505)
 my_parser.add_argument('--Nsamples',  action='store', type = int,   default = 1)
 
+#Parse everything
+args = vars(my_parser.parse_args())
+
 #Print input args to help any future debugging
 print('-------INPUT PARAMS----------')
 for p in args.keys():
     print('%s : %s'%(p.upper(), args[p]))
 print('-----------------------------')
 print('-----------------------------')
-
-#Parse everything
-args = vars(my_parser.parse_args())
-
 
 tile = args['tilename']
 
@@ -44,23 +44,31 @@ BANDLIST = ['G', 'R', 'I', 'Z']
 tables=[]
 h5dir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/table.h5'
 
+print(tile, type(tile))
+metadata = np.genfromtxt('tile_DR3_1_1.csv', dtype='str', delimiter=",")[1:][int(tile)]
+
+tilename = metadata[0][2:-1]
+path = metadata[1][2:-1]
+print(path)
+p_number = path.split('/')[-1]
 for band, BAND in zip(bandlist, BANDLIST):
-	fitsdir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/*{band}_cat.fits'
+	fitsdir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/decade.ncsa.illinois.edu/deca_archive/' + path + f'/cat/{tilename}_r5918{p_number}_{band}_cat.fits'
 
 	table_j = Table.read(fitsdir)
-	table_j[f'MAG_AUTO_{BAND}']=table_j['MAG_AUTO']
-	table_j[f'MAGERR_AUTO_{BAND}']=table_j['MAGERR_AUTO']
-	tables.append(table_j['NUMBER', 'RA', 'DEC', f'MAG_AUTO_{BAND}', f'MAGERR_AUTO_{BAND}'])
-
-table = astropy.hstack(tables)
-
-subtable = table['NUMBER', 'RA', 'DEC', 'MAG_AUTO_G', 'MAG_AUTO_R'\
-                         , 'MAG_AUTO_I', 'MAG_AUTO_Z', 'MAGERR_AUTO_G', 'MAGERR_AUTO_R'\
-                         , 'MAGERR_AUTO_I', 'MAGERR_AUTO_Z']
+	#print(table_j.columns)
+	table_j[f'FLUX_AUTO_{BAND}']=table_j['FLUX_AUTO']
+	table_j[f'FLUXERR_AUTO_{BAND}']=table_j['FLUXERR_AUTO']
+	if band=='g': tables.append(table_j['NUMBER', f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}'])
+	else: tables.append(table_j[f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}'])
+table = astropy.table.hstack(tables)
+print(table.columns)
+subtable = table['NUMBER', 'FLUX_AUTO_G', 'FLUX_AUTO_R'\
+                         , 'FLUX_AUTO_I', 'FLUX_AUTO_Z', 'FLUXERR_AUTO_G', 'FLUXERR_AUTO_R'\
+                         , 'FLUXERR_AUTO_I', 'FLUXERR_AUTO_Z']
 
 dframe = pd.DataFrame(data=subtable['NUMBER'], columns = ['NUMBER'])
-	for label in table_i.columns:
-        	dframe[label] = subtable[label]
+for label in subtable.columns:
+	dframe[label] = subtable[label]
 
 dframe.to_hdf(h5dir, key='df')
 
@@ -79,7 +87,7 @@ list_lines = ['COLUMNS         %s'%column_path,
               'DZ              %s'%args['dz'], 
               'ZMIN            %s'%args['zmin'],
               'ZMAX            %s'%args['zmax'], 
-              'MAG             yes', 
+              'MAG             no'#%s'%args['mag'], 
               'NEW_AB          no', 
               'MADAU           no #TURN OFF MADAU!!!!',
               'EXCLUDE         none', 
@@ -108,7 +116,7 @@ list_lines = [l + '\n' for l in list_lines]
 #will be rewriting same file at once and that won't work. 
 #So make temporary copy first.
 
-sp.run(f'cp /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/DELVEdata_example.pars /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
+sp.run(f'cp /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/DELVEdata_Flux.pars /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
 
 pars = open(f'/home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', mode='w')
 pars.writelines(list_lines)
