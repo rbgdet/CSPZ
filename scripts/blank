@@ -1,0 +1,2 @@
+
+python bpztilerun_template.py --tilename 0 --spectra CWWSB4.list --prior hdfn_gen --OutPath /scratch/midway2/raulteixeira/CosmicShearData/tile_0/pzout_0.h5

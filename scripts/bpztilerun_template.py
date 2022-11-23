@@ -7,6 +7,7 @@ import subprocess as sp
 import glob
 import sys
 import argparse
+import copy
 from astropy.table import Table
 
 #Get all input arguments from command line
@@ -44,27 +45,42 @@ BANDLIST = ['G', 'R', 'I', 'Z']
 tables=[]
 h5dir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/table.h5'
 
-print(tile, type(tile))
+#print(tile, type(tile))
 metadata = np.genfromtxt('tile_DR3_1_1.csv', dtype='str', delimiter=",")[1:][int(tile)]
 
 tilename = metadata[0][2:-1]
 path = metadata[1][2:-1]
-print(path)
+path = path.replace('DEC', 'DEC_Taiga')
+print('path print, should be DEC_Taiga: ', path)
 p_number = path.split('/')[-1]
-for band, BAND in zip(bandlist, BANDLIST):
+for count, (band, BAND) in enumerate(zip(bandlist, BANDLIST)):
 	fitsdir = f'/scratch/midway2/raulteixeira/CosmicShearData/tile_{tile}/decade.ncsa.illinois.edu/deca_archive/' + path + f'/cat/{tilename}_r5918{p_number}_{band}_cat.fits'
-
+	print(f'band: {BAND}. Count: {count}')
+	#breakpoint()
 	table_j = Table.read(fitsdir)
+	print('###Length: ', len(table_j), '###Shape: ', np.array(table_j).shape)
 	#print(table_j.columns)
 	table_j[f'FLUX_AUTO_{BAND}']=table_j['FLUX_AUTO']
+	table_j[f'MAG_AUTO_{BAND}']=table_j['MAG_AUTO']
 	table_j[f'FLUXERR_AUTO_{BAND}']=table_j['FLUXERR_AUTO']
-	if band=='g': tables.append(table_j['NUMBER', f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}'])
-	else: tables.append(table_j[f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}'])
+	table_j[f'MAGERR_AUTO_{BAND}']=table_j['MAGERR_AUTO']
+	mask99 = np.logical_or(table_j[f'MAGERR_AUTO_{BAND}']==99., table_j[f'MAG_AUTO_{BAND}']==99.)
+	onesig_j = np.std(table_j[f'MAG_AUTO_{BAND}'][np.logical_not(mask99)])
+	table_j[f'MAGERR_AUTO_{BAND}'][mask99]=onesig_j
+	if band=='g': 
+		tables.append(table_j['NUMBER', f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}', f'MAG_AUTO_{BAND}', f'MAGERR_AUTO_{BAND}'])
+	#elif band=='i': 
+	#	table_j['MAG_AUTO_I']=table_j['MAG_AUTO']
+	#	tables.append(table_j['MAG_AUTO_I', f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}'])
+	else: tables.append(table_j[f'FLUX_AUTO_{BAND}', f'FLUXERR_AUTO_{BAND}', f'MAG_AUTO_{BAND}', f'MAGERR_AUTO_{BAND}'])
 table = astropy.table.hstack(tables)
 print(table.columns)
+
 subtable = table['NUMBER', 'FLUX_AUTO_G', 'FLUX_AUTO_R'\
                          , 'FLUX_AUTO_I', 'FLUX_AUTO_Z', 'FLUXERR_AUTO_G', 'FLUXERR_AUTO_R'\
-                         , 'FLUXERR_AUTO_I', 'FLUXERR_AUTO_Z']
+                         , 'FLUXERR_AUTO_I', 'FLUXERR_AUTO_Z', 'MAG_AUTO_G', 'MAG_AUTO_R'\
+                         , 'MAG_AUTO_I', 'MAG_AUTO_Z', 'MAGERR_AUTO_G', 'MAGERR_AUTO_R'\
+                         , 'MAGERR_AUTO_I', 'MAGERR_AUTO_Z']
 
 dframe = pd.DataFrame(data=subtable['NUMBER'], columns = ['NUMBER'])
 for label in subtable.columns:
@@ -72,7 +88,7 @@ for label in subtable.columns:
 
 dframe.to_hdf(h5dir, key='df')
 
-column_path =  '/home/raulteixeira/photoz/code/software/DESC_BPZ/tests/CosmicShearPZ.columns'
+column_path =  '/home/raulteixeira/repos/DESC_BPZ/tests/CosmicShearPZ.columns'
 PROB_path   = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/output/probs/PZ_OUTPUT_sgY3_probs_{tile}_finer_test'
 
 #Better to pass output dir as argument to script.
@@ -87,7 +103,7 @@ list_lines = ['COLUMNS         %s'%column_path,
               'DZ              %s'%args['dz'], 
               'ZMIN            %s'%args['zmin'],
               'ZMAX            %s'%args['zmax'], 
-              'MAG             no'#%s'%args['mag'], 
+              'MAG             yes',
               'NEW_AB          no', 
               'MADAU           no #TURN OFF MADAU!!!!',
               'EXCLUDE         none', 
@@ -110,24 +126,25 @@ list_lines = ['COLUMNS         %s'%column_path,
 #I removed all the "\n" from each line purely for visual considerations.
 #Now adding them back in with a single list comprehension line.
 list_lines = [l + '\n' for l in list_lines]
-
+#list_lines = (" \n ").join(list_lines)
 #Can't modify the example.pars directly.
 #If we run in parallel then multiple instances of script
 #will be rewriting same file at once and that won't work. 
 #So make temporary copy first.
 
-sp.run(f'cp /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/DELVEdata_Flux.pars /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
+sp.run('echo "Hello"', shell = True)
 
-pars = open(f'/home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', mode='w')
+sp.run(f'cp /home/raulteixeira/repos/DESC_BPZ/tests/DELVEdata_Flux.pars /home/raulteixeira/repos/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
+
+pars = open(f'/home/raulteixeira/repos/DESC_BPZ/tests/TEMP_{tile}.pars', mode='w')
 pars.writelines(list_lines)
 pars.close()
 
-catalog_name = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/pzinput/pzinput_sgY3_{tile}.h5'
-
+#breakpoint()
 #running bpz using subprocess
-sp.run(f'python /home/raulteixeira/repos/DESC_BPZ/scripts/bpz.py ' + catalog_name + ' -P /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
+sp.run(f'python /home/raulteixeira/repos/DESC_BPZ/scripts/bpz.py ' + h5dir + f' -P /home/raulteixeira/repos/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
 
 #Remove the temporary pars file
-sp.run(f'rm /home/raulteixeira/photoz/code/software/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
+#sp.run(f'rm /home/raulteixeira/repos/DESC_BPZ/tests/TEMP_{tile}.pars', shell = True)
 
 print("end")
