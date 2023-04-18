@@ -60,7 +60,7 @@ for count, (band, BAND) in enumerate(zip(bandlist, BANDLIST)):
 	table_j = Table.read(fitsdir)
 	print('###Length: ', len(table_j), '###Shape: ', np.array(table_j).shape)
 	#print(table_j.columns)
-	table_j[f'FLUX_AUTO_{BAND}']=table_j['FLUX_AUTO']
+	table_j[f'FLUX_AUTO_{BAND}']=table_j['FLUX_AUTO']*1e-12
 	table_j[f'MAG_AUTO_{BAND}']=table_j['MAG_AUTO']
 	table_j[f'FLUXERR_AUTO_{BAND}']=table_j['FLUXERR_AUTO']
 	table_j[f'MAGERR_AUTO_{BAND}']=table_j['MAGERR_AUTO']
@@ -89,7 +89,7 @@ for label in subtable.columns:
 dframe.to_hdf(h5dir, key='df')
 
 column_path =  '/home/raulteixeira/repos/DESC_BPZ/tests/CosmicShearPZ.columns'
-PROB_path   = f'/home/raulteixeira/scratch-midway2/CosmicShearData/bpztiles/output/probs/PZ_OUTPUT_sgY3_probs_{tile}_finer_test'
+PROB_path   = f'/scratch/midway2/raulteixeira/CosmicShearData/bpztiles/output/probs/PZ_OUTPUT_sgY3_probs_{tile}_finer_test'
 
 #Better to pass output dir as argument to script.
 #If you want to run 10 different versions of same tile, you should have a way to
