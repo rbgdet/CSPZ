@@ -1,0 +1,56 @@
+[W 2023-05-25 18:47:17.117 LabApp] 'port' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-25 18:47:17.117 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-25 18:47:17.117 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-25 18:47:17.117 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-25 18:47:17.117 LabApp] 'password' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[I 2023-05-25 18:47:17.129 LabApp] JupyterLab extension loaded from /software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/site-packages/jupyterlab
+[I 2023-05-25 18:47:17.129 LabApp] JupyterLab application directory is /software/python-anaconda-2020.02-el7-x86_64/share/jupyter/lab
+[W 18:47:17.137 NotebookApp] Error loading server extension voila
+    Traceback (most recent call last):
+      File "/software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/site-packages/notebook/notebookapp.py", line 2025, in init_server_extensions
+        mod = importlib.import_module(modulename)
+      File "/software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/importlib/__init__.py", line 127, in import_module
+        return _bootstrap._gcd_import(name[level:], package, level)
+      File "<frozen importlib._bootstrap>", line 1006, in _gcd_import
+      File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+      File "<frozen importlib._bootstrap>", line 965, in _find_and_load_unlocked
+    ModuleNotFoundError: No module named 'voila'
+[I 18:47:17.177 NotebookApp] Serving notebooks from local directory: /home/raulteixeira/repos/CSPZ/notebooks
+[I 18:47:17.177 NotebookApp] Jupyter Notebook 6.4.12 is running at:
+[I 18:47:17.177 NotebookApp] http://10.50.220.71:8574/
+[I 18:47:17.177 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 18:47:28.811 NotebookApp] 302 GET / (10.50.220.71) 1.030000ms
+[I 18:47:28.845 NotebookApp] 302 GET /tree? (10.50.220.71) 1.610000ms
+[W 18:47:30.451 NotebookApp] 404 GET /apple-touch-icon-precomposed.png (10.50.220.71) 28.870000ms referer=None
+[W 18:47:30.600 NotebookApp] 404 GET /apple-touch-icon.png (10.50.220.71) 2.610000ms referer=None
+[I 18:47:32.307 NotebookApp] 302 POST /login?next=%2Ftree%3F (10.50.220.71) 2.320000ms
+[W 18:47:51.498 NotebookApp] Notebook bpz_job_gen.ipynb is not trusted
+[I 18:47:51.786 NotebookApp] Kernel started: 22f18217-1a8e-49bc-963d-f0faaf4338e3, name: python3
+[IPKernelApp] ERROR | No such comm target registered: jupyter.widget.control
+[IPKernelApp] WARNING | No such comm: c63db384-41ee-4e64-8fe4-266cebbb3e82
+[I 18:48:17.991 NotebookApp] Saving file at /bpz_job_gen.ipynb
+[W 18:48:17.992 NotebookApp] Notebook bpz_job_gen.ipynb is not trusted
+[W 2023-05-26 13:00:44.646 LabApp] 'port' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-26 13:00:44.647 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-26 13:00:44.647 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-26 13:00:44.647 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-05-26 13:00:44.647 LabApp] 'password' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[I 2023-05-26 13:00:44.662 LabApp] JupyterLab extension loaded from /software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/site-packages/jupyterlab
+[I 2023-05-26 13:00:44.662 LabApp] JupyterLab application directory is /software/python-anaconda-2020.02-el7-x86_64/share/jupyter/lab
+[W 13:00:44.684 NotebookApp] Error loading server extension voila
+    Traceback (most recent call last):
+      File "/software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/site-packages/notebook/notebookapp.py", line 2025, in init_server_extensions
+        mod = importlib.import_module(modulename)
+      File "/software/python-anaconda-2020.02-el7-x86_64/lib/python3.7/importlib/__init__.py", line 127, in import_module
+        return _bootstrap._gcd_import(name[level:], package, level)
+      File "<frozen importlib._bootstrap>", line 1006, in _gcd_import
+      File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+      File "<frozen importlib._bootstrap>", line 965, in _find_and_load_unlocked
+    ModuleNotFoundError: No module named 'voila'
+[I 13:00:44.730 NotebookApp] Serving notebooks from local directory: /home/raulteixeira/repos/CSPZ/notebooks
+[I 13:00:44.730 NotebookApp] Jupyter Notebook 6.4.12 is running at:
+[I 13:00:44.730 NotebookApp] http://10.50.220.72:8794/
+[I 13:00:44.731 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 13:01:17.841 NotebookApp] 302 GET / (10.50.220.71) 0.900000ms
+[I 13:01:17.910 NotebookApp] 302 GET /tree? (10.50.220.71) 1.550000ms
+[I 13:03:05.721 NotebookApp] 302 POST /login?next=%2Ftree%3F (10.50.220.71) 2.530000ms
