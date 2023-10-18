@@ -17,22 +17,22 @@ import pandas as pd
 #f = h5py.File('/project2/chihway/data/decade/metacal_test_20230427_v3.hdf') #h5 files have aproblem with mpi?
 df = pd.read_csv('/project2/chihway/raulteixeira/data/metacal_fluxes+ids_V3_1e6_seed42.csv.gz')
 
-flux_r, flux_i, flux_z = df['FLUX_R'].values, df['FLUX_I'].values, df['FLUX_Z'].values
-flux_err_r, flux_err_i, flux_err_z = df['FLUX_ERR_R'].values, df['FLUX_ERR_I'].values, df['FLUX_ERR_Z'].values
+flux_r, flux_i, flux_z = df['mcal_FLUX_r'].values, df['mcal_FLUX_i'].values, df['mcal_FLUX_z'].values
+flux_err_r, flux_err_i, flux_err_z = df['mcal_FLUX_r_ERR'].values, df['mcal_FLUX_i_ERR'].values, df['mcal_FLUX_z_ERR'].values
 
 fluxes_d = np.array([flux_r, flux_i, flux_z]).T
 fluxerrs_d = np.array([flux_err_r, flux_err_i, flux_err_z]).T
     
-outpath = '/project2/chihway/raulteixeira/data/'
+outpath = '/project/chihway/raulteixeira/data/'
 
 nTrain=int(1e6)
 # Here we just the weights and initialize the SOM.
-som_weights = np.load("%s/som_delve_48_48_MaskV3.npy"%outpath)
+som_weights = np.load("%s/som_delve_metacal_gold_26x26_2e6.npy"%outpath)
 hh = ns.hFunc(nTrain,sigma=(30,1))
 metric = ns.AsinhMetric(lnScaleSigma=0.4,lnScaleStep=0.03)
 som = ns.NoiseSOM(metric,None,None, \
     learning=hh, \
-    shape=(48,48), \
+    shape=(26,26), \
     wrap=False,logF=True, \
     initialize=som_weights, \
     minError=0.02)
