@@ -23,7 +23,8 @@ with h5py.File('/project/chihway/data/decade/metacal_gold_combined_20231212.hdf'
                     (mag_z < 26)   & (mag_z > 15) & 
                     (mag_r - mag_i < 4)   & (mag_r - mag_i > -1.5) & 
                     (mag_i - mag_z < 4)   & (mag_i - mag_z > -1.5))
-
+    del mag_i, mag_z
+    
     SNR     = np.array(f['mcal_s2n_noshear'])
     T_ratio = np.array(f['mcal_T_ratio_noshear'])
     T       = np.array(f['mcal_T_noshear'])
@@ -42,8 +43,13 @@ with h5py.File('/project/chihway/data/decade/metacal_gold_combined_20231212.hdf'
     #SG_Mask = (sg>=4)
     FG_Mask = (fg==0)
 
+    del T_ratio, flags
     Other_Mask = np.invert((T > 2) & (SNR < 30)) & np.invert((np.log10(T) < (22.25 - mag_r)/3.5) & (g1**2 + g2**2 > 0.8**2))
+    
+    del SNR, T, fg, g1, g2, mag_r
 
     Mask = mcal_pz_mask & SNR_Mask & Tratio_Mask & T_Mask & Flag_Mask & Other_Mask & FG_Mask #& SG_Mask
+    
+    del mcal_pz_mask, SNR_Mask, Tratio_Mask, T_Mask, Flag_Mask, Other_Mask, FG_Mask
 
     np.save('/project/chihway/raulteixeira/data/metacal_gold_mask_all.npy', Mask)
