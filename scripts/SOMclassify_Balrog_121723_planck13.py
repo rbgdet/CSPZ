@@ -17,8 +17,8 @@ outpath = '/project/chihway/raulteixeira/data'
 
 catpath = '/project/chihway/dhayaa/DECADE/BalrogOfTheDECADE_20231216.hdf5'
 with h5py.File(catpath) as f:
-    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_sfd98']).T
-    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_sfd98']).T
+    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_planck13']).T
+    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_planck13']).T
     
 fluxes_d = np.array([flux_r, flux_i, flux_z]).T
 fluxerrs_d = np.array([flux_err_r, flux_err_i, flux_err_z]).T
@@ -48,7 +48,7 @@ if not pool.is_master():
     sys.exit(0)
 #"""    
 
-filename = "%s/som_BalrogoftheDECADE_121923_32x32.npz"%(outpath)
+filename = "%s/som_BalrogoftheDECADE_121923_32x32_planck13.npz"%(outpath)
 
 t0 = time.time()
 

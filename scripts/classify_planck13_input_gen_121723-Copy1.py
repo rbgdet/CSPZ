@@ -1,0 +1,25 @@
+import numpy as np
+import h5py
+import pandas as pd
+outpath = '/project/chihway/raulteixeira/data'
+
+maskpath = '/project/chihway/data/decade/metacal_gold_combined_mask_20231212.hdf'
+catpath = '/project/chihway/data/decade/metacal_gold_combined_20231212.hdf'
+with  h5py.File(maskpath) as f, h5py.File(catpath) as g:
+    Mask = np.array(f['baseline_mcal_mask_noshear'])
+    length = Mask.sum()
+    flux_r, flux_i, flux_z = np.array(g['mcal_flux_noshear_dered_planck13']).T[:,Mask]
+    flux_err_r, flux_err_i, flux_err_z = np.array(g['mcal_flux_err_noshear_dered_planck13']).T[:,Mask]
+    coadd_object_id = np.array(g['id'])[Mask]
+    ra, dec = np.array(g['RA'])[Mask], np.array(g['DEC'])[Mask]
+    colnames = [f'mcal_flux_noshear_dered_planck13_{band}' for band in 'riz']+\
+               [f'mcal_flux_err_noshear_dered_planck13_{band}' for band in 'riz']+\
+               ['id', 'RA', 'DEC']
+    data = np.array([flux_r, flux_i, flux_z,\
+                     flux_err_r, flux_err_i, flux_err_z,\
+                     coadd_object_id, ra, dec]).T
+    df = pd.DataFrame(data=data, columns=colnames)
+    dfs = np.split(df, 17)
+    
+    for i, df_ in enumerate(dfs):
+        df_.to_hdf(f'%s/classify_planck13/cat_{i:02}.hdf5'%outpath, key='df')

@@ -11,20 +11,25 @@ import warnings
 import os
 from schwimmbad import MPIPool
 import pandas as pd
-import h5py
 nwide=32
+start_time = time.time()
+np.random.seed(42)
 outpath = '/project/chihway/raulteixeira/data'
 
-catpath = '/project/chihway/dhayaa/DECADE/BalrogOfTheDECADE_20231216.hdf5'
-with h5py.File(catpath) as f:
-    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_sfd98']).T
-    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_sfd98']).T
-    
+#load metacal catalog
+#f = h5py.File('/project2/chihway/data/decade/metacal_test_20230427_v3.hdf') #h5 files have aproblem with mpi?
+df = pd.read_csv('/project2/chihway/raulteixeira/data/metacal_fluxes+ids_V3_1e6_seed42.csv.gz')
+
+flux_r, flux_i, flux_z = df['mcal_FLUX_r'].values, df['mcal_FLUX_i'].values, df['mcal_FLUX_z'].values
+flux_err_r, flux_err_i, flux_err_z = df['mcal_FLUX_r_ERR'].values, df['mcal_FLUX_i_ERR'].values, df['mcal_FLUX_z_ERR'].values
+
 fluxes_d = np.array([flux_r, flux_i, flux_z]).T
 fluxerrs_d = np.array([flux_err_r, flux_err_i, flux_err_z]).T
     
-nTrain=int(2e6)
-# Here we just input the weights and initialize the SOM.
+outpath = '/project/chihway/raulteixeira/data/'
+
+nTrain=int(1e6)
+# Here we just the weights and initialize the SOM.
 som_weights = np.load("%s/som_delve_metacal_gold_32x32_seed42_nTrain2e6_121723.npy"%outpath)
 hh = ns.hFunc(nTrain,sigma=(30,1))
 metric = ns.AsinhMetric(lnScaleSigma=0.4,lnScaleStep=0.03)
@@ -48,7 +53,7 @@ if not pool.is_master():
     sys.exit(0)
 #"""    
 
-filename = "%s/som_BalrogoftheDECADE_121923_32x32.npz"%(outpath)
+filename = "%s/som_delve_48x48_1e6.npz"%(outpath)
 
 t0 = time.time()
 

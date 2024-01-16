@@ -10,8 +10,13 @@ import sys
 import time
 start_time = time.time()
 np.random.seed(42)
+nwide = 32
 nTrain = int(2e6)
-length = 108904669 # Given by Chihway
+
+with h5py.File('/project/chihway/data/decade/metacal_gold_combined_mask_20231212.hdf') as f:
+    Mask = np.array(f['baseline_mcal_mask_noshear'])
+    
+length = Mask.sum() # Given by Mask
 indices = np.random.choice(length, size=nTrain, replace=False)
 
 def flux2mag(flux):
@@ -19,8 +24,8 @@ def flux2mag(flux):
 
 with h5py.File('/project/chihway/data/decade/metacal_gold_combined_20231212.hdf') as f:
     
-    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_sfd98']).T[:,indices]
-    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_sfd98']).T[:,indices]
+    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_sfd98']).T[:,Mask][:,indices]
+    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_sfd98']).T[:,Mask][:,indices]
     
     #These are the fluxes with all metacal cuts applied
     flux_r = flux_r
@@ -42,12 +47,12 @@ metric = ns.AsinhMetric(lnScaleSigma=0.4, lnScaleStep=0.03)
 
 som = ns.NoiseSOM(metric, fluxes_d, fluxerrs_d, \
     learning=hh, \
-    shape=(26,26), \
+    shape=(nwide,nwide), \
     wrap=False,logF=True, \
     initialize='sample', \
     minError=0.02)
 
-path_cats='/project2/chihway/raulteixeira/data/'
+path_cats='/project/chihway/raulteixeira/data/'
 # And save the resultant weight matrix
-np.save("%s/som_delve_metacal_gold_26x26_2e6.npy"%path_cats,som.weights)
+np.save("%s/som_delve_metacal_gold_32x32_seed42_nTrain2e6_121723.npy"%path_cats,som.weights)
 print(time.time()-start_time, ' seconds')

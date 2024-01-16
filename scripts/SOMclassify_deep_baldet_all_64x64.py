@@ -11,26 +11,27 @@ import warnings
 import os
 from schwimmbad import MPIPool
 import pandas as pd
-import h5py
-nwide=32
+
+n_deep = 64
 outpath = '/project/chihway/raulteixeira/data'
 
-catpath = '/project/chihway/dhayaa/DECADE/BalrogOfTheDECADE_20231216.hdf5'
-with h5py.File(catpath) as f:
-    flux_r, flux_i, flux_z = np.array(f['mcal_flux_noshear_dered_sfd98']).T
-    flux_err_r, flux_err_i, flux_err_z = np.array(f['mcal_flux_err_noshear_dered_sfd98']).T
+DF = pd.read_csv('/project/chihway/raulteixeira/data/deepfields.csv.gz')
+det_ids = np.load('%s/BalrogoftheDECADE_121723_detected_ids.npz'%outpath)['arr_0']
+DF = DF[np.isin(DF.ID.values, det_ids)]
+nTrain=len(DF)
+bands = list('UGRIZJH')+['KS']
+
+fluxes_d = np.array([DF[f'BDF_FLUX_DERED_CALIB_{band}'].values for band in bands]).T
+fluxerrs_d = np.array([DF[f'BDF_FLUX_ERR_DERED_CALIB_{band}'].values for band in bands]).T
     
-fluxes_d = np.array([flux_r, flux_i, flux_z]).T
-fluxerrs_d = np.array([flux_err_r, flux_err_i, flux_err_z]).T
-    
-nTrain=int(2e6)
-# Here we just input the weights and initialize the SOM.
-som_weights = np.load("%s/som_delve_metacal_gold_32x32_seed42_nTrain2e6_121723.npy"%outpath)
+nTrain=len(fluxes_d)
+# Here we just the weights and initialize the SOM.
+som_weights = np.load("%s/som_weights_des_DF_121723_64x64.npy"%outpath)
 hh = ns.hFunc(nTrain,sigma=(30,1))
 metric = ns.AsinhMetric(lnScaleSigma=0.4,lnScaleStep=0.03)
 som = ns.NoiseSOM(metric,None,None, \
     learning=hh, \
-    shape=(nwide,nwide), \
+    shape=(n_deep,n_deep), \
     wrap=False,logF=True, \
     initialize=som_weights, \
     minError=0.02)
@@ -48,7 +49,7 @@ if not pool.is_master():
     sys.exit(0)
 #"""    
 
-filename = "%s/som_BalrogoftheDECADE_121923_32x32.npz"%(outpath)
+filename = "%s/som_DES_DF_baldet_121923_64x64.npz"%(outpath)
 
 t0 = time.time()
 
