@@ -42,42 +42,70 @@ assert np.all( noshear_mask[noshear_mask>0] == tomo_bins+1 )
 ######################################
 #MASK both catalogs so they overlap the exact same area
 
-boss_ra_all = boss_cat['RA']
-boss_dec_all = boss_cat['DEC']
-nside = 4096
+#TRY CONSTRUCTING THE BOSS MASK FROM THE RANDOMS:
+
+nside = 512
 npix = hp.nside2npix(nside)
 BOSS_MASK = np.zeros(npix, dtype=np.int32)
+
+theta_random = np.radians(90.0 - boss_random['DEC'])
+phi_random = np.radians(boss_random['RA'])
+boss_random_indices = hp.ang2pix(nside, theta_random, phi_random)
+
+boss_ra_all = boss_cat['RA']
+boss_dec_all = boss_cat['DEC']
 theta = np.radians(90.0 - boss_dec_all)
 phi = np.radians(boss_ra_all)
 boss_indices = hp.ang2pix(nside, theta, phi)
+
 for idx in boss_indices:
     BOSS_MASK[idx] = 1
-
-delve_mask = hp.fitsfunc.read_map('/project/chihway/data/decade/footprint_mask_delve_cs_20231212.fits')
-
-joint = delve_mask & BOSS_MASK
 
 theta_delve = np.radians(90.0 - metacal_cat['DEC'][:])
 phi_delve = np.radians(metacal_cat['RA'][:])
 delve_indices = hp.ang2pix(nside,theta_delve,phi_delve)
+DELVE_MASK = np.zeros(npix, dtype=np.int32)
+for idx in delve_indices:
+    DELVE_MASK[idx] = 1
+    
+
+#delve_mask = hp.fitsfunc.read_map('/project/chihway/data/decade/footprint_mask_delve_cs_20231212.fits')
+#delve_mask = hp.pixelfunc.ud_grade(delve_mask,nside)
+
+hp.fitsfunc.write_map('delve_nside%d.fits'%nside,DELVE_MASK,overwrite=True)
+hp.fitsfunc.write_map('boss_nside%d.fits'%nside,BOSS_MASK,overwrite=True)
+print('Wrote DELVE and BOSS masks to disk for nside %d'%nside)
+
+#joint = delve_mask & BOSS_MASK #this is a bit-mask of nside=4096, entries containing 1 represent cells where there is overlap between boss and delve
+joint = DELVE_MASK & BOSS_MASK #this is a bit-mask of nside=4096, entries containing 1 represent cells where there is overlap between boss and delve
+
+#theta_delve = np.radians(90.0 - metacal_cat['DEC'][:])
+#phi_delve = np.radians(metacal_cat['RA'][:])
+#delve_indices = hp.ang2pix(nside,theta_delve,phi_delve)
 
 DELVE_MATCHING_BOSS = np.zeros(len(metacal_cat['RA'][:]),dtype=int)
 for i,ind in enumerate(delve_indices):
     DELVE_MATCHING_BOSS[i] = joint[ind]==1
 
-BOSS_MATCHING_DELVE = np.zeros(len(boss_ra_all),dtype=int)
-for i,ind in enumerate(boss_indices):
-    BOSS_MATCHING_DELVE[i] = joint[ind]==1
-
-theta_random = np.radians(90.0 - boss_random['DEC'])
-phi_random = np.radians(boss_random['RA'])
-boss_random_indices = hp.ang2pix(nside, theta_random, phi_random)
 BOSS_RANDOM_MATCHING_DELVE = np.zeros(len(boss_random['RA']),dtype=int)
 for i,ind in enumerate(boss_random_indices):
     BOSS_RANDOM_MATCHING_DELVE[i] = joint[ind]==1
 
+#boss_ra_all = boss_cat['RA']
+#boss_dec_all = boss_cat['DEC']
+#theta = np.radians(90.0 - boss_dec_all)
+#phi = np.radians(boss_ra_all)  
+#boss_indices = hp.ang2pix(nside, theta, phi)
+BOSS_MATCHING_DELVE = np.zeros(len(boss_ra_all),dtype=int)
+for i,ind in enumerate(boss_indices):
+    BOSS_MATCHING_DELVE[i] = joint[ind]==1
+
+
 boss_cat = boss_cat[BOSS_MATCHING_DELVE.astype(bool)]
 boss_random = boss_random[BOSS_RANDOM_MATCHING_DELVE.astype(bool)]
+print('boss catalog length: %d'%len(boss_cat))
+print('random boss catalog length: %d'%len(boss_random))
+
 assert(len(DELVE_MATCHING_BOSS)==len(noshear_mask))
 overlapping_metacal_ra = metacal_cat['RA'][:][DELVE_MATCHING_BOSS.astype(bool)]
 overlapping_metacal_dec = metacal_cat['DEC'][:][DELVE_MATCHING_BOSS.astype(bool)]
@@ -86,9 +114,10 @@ noshear_mask = noshear_mask[DELVE_MATCHING_BOSS.astype(bool)]
 ############
 #the meat of the calculation: for every tomo bin, split the BOSS & random sample 
 #into slices of 0.025 in redshift and cross-correlate
-nbins = 20
+nbins = 10
 bin_slop=0.01
-bin_edges = np.linspace(0.1,1.1,41) #slices of 0.025 in redshift
+ZSLICES = 21
+bin_edges = np.linspace(0.1,1.1,ZSLICES) #slices of 0.025 in redshift
 
 def angle_min_max(redshift): #will use this to minimum and maximum theta over which treecorr will run
         physical_min, physical_max = 1.5*u.Mpc, 5.0*u.Mpc #in Mpc
@@ -151,7 +180,7 @@ for Bin in np.arange(1,5): #will use the 1-indexed bin assignments in noshear_ma
                 DR.process(unknown_cat,random_cat)
 
                 
-                outname = 'outputs/noELGs_jointmask/output_1.5to5.0Mpc_bslop%1.3f_ref%1.3fz%1.3f_metacalbin%d.txt'%(bin_slop,slice_lower_edge,slice_upper_edge,Bin)
+                outname = 'outputs/noELGs_jointmask_nside%d_angbins%d_zslices%d/output_1.5to5.0Mpc_bslop%1.3f_ref%1.3fz%1.3f_metacalbin%d.txt'%(nside,nbins,ZSLICES,bin_slop,slice_lower_edge,slice_upper_edge,Bin)
                 print('Writing %s (measured between %1.3f and %1.3f deg)'%(outname,min_theta,max_theta))
                 DD.write(outname,dr=DR,rr=DR) #including RR simply because treecorr wants it to be there for writing
 
