@@ -1,0 +1,13 @@
+The files below are used to get the dark matter angular correlation function as a function of z, equation 7 of https://arxiv.org/pdf/2012.08569.pdf
+
+1- Start making a bunch of cosmosis files that are altered to have top-hat n(z)s coinciding with the redshift slices where the Wz estimates are obtained. One example is the file GET_WZ_FILE_02.fits.
+
+(the n(z) section I have altered is the bin1 of nz_lens, that way the matter auto-correlation <bin1,bin1> is the w_dm we need)
+
+2- Run cosmosis with some reasonable cosmology in values.ini using test sampler and a simple pipeline that gets as far as computing the clustering correlation. The example I used is GET_WZ.ini. 
+
+3- Look for the outputs. The way the ini file is setup, you will need to get GET_WZ_FILE_02.fits/galaxy_xi/bin_1_1.txt and the associated theta.txt. This is w_dm(theta) for the redshift in the fits file (which you can double check is right in GET_WZ_FILE_02.fits/nz_lens/bin_1.txt.
+
+4- Now simply run treecorr with the BOSS Data and Randoms and use landy-szalay (DD-2DR+RR / RR) to get the boss auto-correlation function within the same slices, which you then need to divide by the w_dm curve to get the bias (squared).
+
+5- Be happy.
